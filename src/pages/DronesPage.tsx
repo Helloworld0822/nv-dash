@@ -3,7 +3,7 @@ import { Icon } from '../components/Icon'
 import { Badge, Card, Empty, ErrorBar, PageHead } from '../components/ui'
 import { useDrones } from '../lib/useDrones'
 import { DRONE_STATUS_LABEL } from '../lib/drones'
-import { formatTime } from '../lib/format'
+import { formatTime, toward } from '../lib/format'
 
 export function DronesPage() {
   const drones = useDrones()
@@ -55,7 +55,7 @@ export function DronesPage() {
               <div>
                 <b style={{ fontSize: 15 }}>
                   {flying.name}
-                  {flying.place ? ` · ${flying.place}(으)로 이동` : ''}
+                  {flying.place ? ` · ${toward(flying.place)} 이동` : ''}
                 </b>
                 <small>
                   {flying.orderNumber ? `주문 ${flying.orderNumber} · ` : ''}

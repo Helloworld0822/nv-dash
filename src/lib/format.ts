@@ -31,6 +31,13 @@ export function formatDateTime(iso: string | null | undefined) {
   return `${date.getMonth() + 1}월 ${date.getDate()}일 ${time}`
 }
 
+/** 「1층 현관으로 이동」처럼 장소 뒤에 올 조사를 붙인다. */
+export function toward(place: string) {
+  const last = place.charCodeAt(place.length - 1)
+  if (Number.isNaN(last) || last < 0xac00 || last > 0xd7a3) return `${place}로`
+  return `${place}${(last - 0xac00) % 28 ? '으로' : '로'}`
+}
+
 export function formatToday(date = new Date()) {
   return date.toLocaleDateString('ko-KR', {
     year: 'numeric',

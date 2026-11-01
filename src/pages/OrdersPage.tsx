@@ -164,7 +164,7 @@ export function OrdersPage() {
                   <dd>{selected.notes || '없음'}</dd>
                 </dl>
                 <dl className="kv">
-                  <dt>결제 / 결제금액</dt>
+                  <dt>배달비 / 결제금액</dt>
                   <dd>
                     {selected.payment ? selected.payment.status : '미결제'} /{' '}
                     {formatWon(selected.total_amount)}

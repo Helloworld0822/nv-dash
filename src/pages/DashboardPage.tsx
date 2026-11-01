@@ -5,7 +5,7 @@ import { useOrderEvents, useOrderStats, useOrders } from '../api/hooks'
 import { useDrones } from '../lib/useDrones'
 import { useAlerts } from '../lib/useAlerts'
 import { DRONE_STATUS_LABEL } from '../lib/drones'
-import { formatTime, shortOrderNumber } from '../lib/format'
+import { formatTime, shortOrderNumber, toward } from '../lib/format'
 import { eventLabel, isActiveOrder, orderStatusLabel } from '../lib/orderStatus'
 
 export function DashboardPage() {
@@ -125,7 +125,7 @@ export function DashboardPage() {
                 <Icon name="drone" size={20} />
                 <b>{flying.name}</b>
                 <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-                  {flying.place ? `${flying.place}(으)로 이동` : '배송 중'}
+                  {flying.place ? `${toward(flying.place)} 이동` : '배송 중'}
                 </span>
                 <Icon name="chevronRight" size={16} />
               </Link>

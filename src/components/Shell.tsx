@@ -93,7 +93,7 @@ export function Shell() {
 
       <div className="main">
         <header className="topbar">
-          <span className="crumb">교내 배달 관리자 / {crumb}</span>
+          <span className="crumb">교내 배달 관리자  /  {crumb}</span>
           <div className="topbar-right">
             <span className="open-state">
               <span className="dot" />

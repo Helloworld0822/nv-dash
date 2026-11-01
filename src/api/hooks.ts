@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from './client'
+import { ApiError, api } from './client'
 import type {
   AdminOrderList,
   AdminOrderStats,
@@ -31,8 +31,17 @@ export function useSession() {
 export function useLogin() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (body: { username: string; password: string }) =>
-      api<AdminSessionInfo>(`${ADMIN}/auth/login`, { method: 'POST', body }),
+    mutationFn: async (body: { username: string; password: string }) => {
+      await api<AdminSessionInfo>(`${ADMIN}/auth/login`, { method: 'POST', body })
+      try {
+        return await api<AdminSessionInfo>(`${ADMIN}/auth/me`)
+      } catch {
+        throw new ApiError(
+          401,
+          '관리자 세션을 유지하지 못했습니다. 페이지를 새로고침한 뒤 다시 로그인해 주세요.',
+        )
+      }
+    },
     onSuccess: (session) => {
       qc.setQueryData(['session'], session)
     },

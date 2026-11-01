@@ -593,7 +593,11 @@ ul {
 .trow {
   display: grid;
   align-items: center;
-  gap: 16px;
+}
+
+.thead > *:not(:last-child),
+.trow > *:not(:last-child) {
+  padding-right: 16px;
 }
 
 .thead {
@@ -1379,6 +1383,7 @@ ul {
 }
 
 .login-form .btn {
+  width: 100%;
   height: 52px;
 }
 

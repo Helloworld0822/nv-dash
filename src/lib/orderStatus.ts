@@ -1,6 +1,8 @@
+import { toward } from './format'
+
 export const ORDER_STATUS_LABEL: Record<string, string> = {
   pending_payment: '결제 대기',
-  paid: '신규',
+  paid: '신규 주문',
   preparing: '준비 중',
   ready: '준비 완료',
   assigned: '배차됨',
@@ -69,7 +71,7 @@ export function eventLabel(event: { event_type: string; payload?: Record<string,
   const base = EVENT_LABEL[event.event_type] ?? event.event_type
   const status = event.payload?.['status']
   if (event.event_type === 'order.status_changed' && typeof status === 'string') {
-    return `주문 상태가 ${orderStatusLabel(status)}(으)로 바뀌었어요`
+    return `주문 상태가 ${toward(orderStatusLabel(status))} 바뀌었어요`
   }
   return base
 }

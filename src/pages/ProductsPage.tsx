@@ -124,9 +124,7 @@ export function ProductsPage() {
                   <Thumb seed={item.id} size="sm" />
                   <div>
                     <div className="name">{item.name}</div>
-                    <div className="sku">
-                      {item.currency} · {item.sku}
-                    </div>
+                    <div className="sku">{item.sku}</div>
                   </div>
                 </div>
                 <span style={{ fontWeight: 500 }}>{formatWon(item.unit_price)}</span>
