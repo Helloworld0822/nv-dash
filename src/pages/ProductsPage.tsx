@@ -8,8 +8,6 @@ import { formatWon } from '../lib/format'
 type StockTab = 'all' | 'selling' | 'out'
 type Sort = 'name' | 'stock' | 'price'
 
-const COLUMNS = '390px 170px 150px 160px 150px 92px'
-
 export function ProductsPage() {
   const inventory = useInventory()
   const update = useUpdateItem()
@@ -65,9 +63,9 @@ export function ProductsPage() {
 
       <ErrorBar error={inventory.error ?? update.error} />
 
-      <Card>
+      <Card className="product-table">
         <div className="filters">
-          <label className="search" style={{ flex: '1 1 420px' }}>
+          <label className="search is-grow">
             <Icon name="search" />
             <input
               placeholder="상품명을 검색해 주세요"
@@ -95,7 +93,7 @@ export function ProductsPage() {
           ]}
         />
 
-        <div className="thead" style={{ gridTemplateColumns: COLUMNS }}>
+        <div className="thead">
           <span>상품 정보</span>
           <span>판매가</span>
           <span>재고</span>
@@ -119,7 +117,7 @@ export function ProductsPage() {
           visible.map((item) => {
             const soldOut = !item.active || item.stock_quantity <= 0
             return (
-              <div key={item.id} className="trow" style={{ gridTemplateColumns: COLUMNS }}>
+              <div key={item.id} className="trow">
                 <div className="product-cell">
                   <Thumb seed={item.id} size="sm" />
                   <div>
@@ -127,8 +125,8 @@ export function ProductsPage() {
                     <div className="sku">{item.sku}</div>
                   </div>
                 </div>
-                <span style={{ fontWeight: 500 }}>{formatWon(item.unit_price)}</span>
-                <span style={{ color: item.stock_quantity <= 0 ? 'var(--brand)' : undefined }}>
+                <span className="price">{formatWon(item.unit_price)}</span>
+                <span className={item.stock_quantity <= 0 ? 'stock is-out' : 'stock'}>
                   {item.stock_quantity}개
                 </span>
                 <span>

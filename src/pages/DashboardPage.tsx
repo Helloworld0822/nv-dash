@@ -54,6 +54,7 @@ export function DashboardPage() {
 
       <div className="cols">
         <Card
+          className="dash-orders"
           title="진행 중인 주문"
           action={
             <Link className="btn is-sm" to="/orders">
@@ -61,7 +62,7 @@ export function DashboardPage() {
             </Link>
           }
         >
-          <div className="thead" style={{ gridTemplateColumns: '100px minmax(0,1fr) 150px 90px' }}>
+          <div className="thead">
             <span>주문</span>
             <span>주문자</span>
             <span>수령 장소</span>
@@ -78,12 +79,11 @@ export function DashboardPage() {
                 key={order.id}
                 to={`/orders?order=${order.id}`}
                 className="trow"
-                style={{ gridTemplateColumns: '100px minmax(0,1fr) 150px 90px' }}
               >
                 <span>
                   <b>{shortOrderNumber(order.order_number)}</b>
                   <br />
-                  <small style={{ color: 'var(--muted)' }}>{formatTime(order.created_at)}</small>
+                  <small>{formatTime(order.created_at)}</small>
                 </span>
                 <span>{order.customer_name}</span>
                 <span>{order.delivery_address}</span>
@@ -123,10 +123,10 @@ export function DashboardPage() {
             <>
               <Link to={`/drones/${encodeURIComponent(flying.id)}`} className="drone-row-top">
                 <Icon name="drone" size={20} />
-                <b>{flying.name}</b>
-                <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-                  {flying.place ? `${toward(flying.place)} 이동` : '배송 중'}
-                </span>
+                <div>
+                  <b>{flying.name}</b>
+                  <small>{flying.place ? `${toward(flying.place)} 이동` : '배송 중'}</small>
+                </div>
                 <Icon name="chevronRight" size={16} />
               </Link>
               <div className="kv">

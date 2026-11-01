@@ -76,7 +76,7 @@ export function DroneDetailPage() {
           </div>
         </Card>
 
-        <div style={{ display: 'grid', gap: 24 }}>
+        <div className="stack">
           <Card
             title="기체 상태"
             action={

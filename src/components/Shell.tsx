@@ -100,7 +100,7 @@ export function Shell() {
               매점 운영 중
             </span>
             <span className="today">{formatToday()}</span>
-            <NavLink to="/alerts" title="알림" style={{ display: 'grid', placeItems: 'center' }}>
+            <NavLink to="/alerts" title="알림" className="topbar-bell">
               <Icon name="bell" size={20} />
             </NavLink>
             <span className="avatar">{initial}</span>

@@ -100,7 +100,7 @@ export function AlertsPage() {
             <Empty title="실패한 작업이 없어요" hint="주문 처리 대기열이 정상이에요." />
           ) : (
             failedJobs.map((job) => (
-              <div key={job.id} className="trow" style={{ gridTemplateColumns: 'minmax(0,1fr) auto' }}>
+              <div key={job.id} className="trow job-row">
                 <div>
                   <b>{job.id.slice(0, 8)}</b>
                   <div className="sku">

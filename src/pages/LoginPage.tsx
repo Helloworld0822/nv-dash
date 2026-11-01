@@ -67,12 +67,14 @@ export function LoginPage() {
 
       <section className="login-panel">
         <form className="login-form" onSubmit={onSubmit}>
-          <div className="login-kicker">
-            <Icon name="store" size={24} />
-            <span>교내 배달 관리자</span>
+          <div className="login-head">
+            <div className="login-kicker">
+              <Icon name="store" size={24} />
+              <span>교내 배달 관리자</span>
+            </div>
+            <h2>관리자 로그인</h2>
+            <p>매점 관리자 계정으로 로그인해 주세요.</p>
           </div>
-          <h2>관리자 로그인</h2>
-          <p>매점 관리자 계정으로 로그인해 주세요.</p>
 
           <div className="field">
             <label htmlFor="username">아이디</label>

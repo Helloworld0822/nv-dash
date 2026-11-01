@@ -44,7 +44,7 @@ export function DronesPage() {
           action={
             <span className="map-legend">
               <span className="dot" /> 배송 중
-              <span className="dot" /> 수령 장소
+              <span className="dot is-place" /> 수령 장소
             </span>
           }
         >
@@ -53,7 +53,7 @@ export function DronesPage() {
             <div className="drone-row-top">
               <Icon name="drone" size={24} />
               <div>
-                <b style={{ fontSize: 15 }}>
+                <b>
                   {flying.name}
                   {flying.place ? ` · ${toward(flying.place)} 이동` : ''}
                 </b>
