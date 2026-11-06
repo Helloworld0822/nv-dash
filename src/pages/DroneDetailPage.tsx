@@ -12,7 +12,7 @@ export function DroneDetailPage() {
   const drones = useDrones()
   const events = useOrderEvents(8)
 
-  const drone = drones.list.find((candidate) => candidate.id === decodeURIComponent(id ?? ''))
+  const drone = drones.list.find((candidate) => candidate.id === id)
 
   if (drones.isPending) return <Empty title="불러오는 중…" />
   if (!drone) {

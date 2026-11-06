@@ -40,7 +40,7 @@ export function DronesPage() {
 
       <div className="cols is-map">
         <Card
-          title="교내 배송 지도"
+          title="교내 배송 지도 · 경로 예시"
           action={
             <span className="map-legend">
               <span className="dot" /> 배송 중
@@ -48,7 +48,7 @@ export function DronesPage() {
             </span>
           }
         >
-          <div className="map" role="img" aria-label="교내 배송 경로 도식" />
+          <div className="map" role="img" aria-label="교내 배송 경로 예시 도식" />
           {flying ? (
             <div className="drone-row-top">
               <Icon name="drone" size={24} />

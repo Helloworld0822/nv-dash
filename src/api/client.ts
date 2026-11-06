@@ -30,6 +30,7 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
   const response = await fetch(buildUrl(path, options.query), {
     method: options.method ?? 'GET',
     credentials: 'include',
+    signal: AbortSignal.timeout(15_000),
     headers: options.body === undefined ? undefined : { 'content-type': 'application/json' },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
   })

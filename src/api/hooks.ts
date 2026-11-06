@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, api } from './client'
+import { clearAdminSession } from './session'
+import { droneTelemetryListSchema } from '../lib/drones'
 import type {
   AdminOrderList,
   AdminOrderStats,
@@ -35,7 +37,8 @@ export function useLogin() {
       await api<AdminSessionInfo>(`${ADMIN}/auth/login`, { method: 'POST', body })
       try {
         return await api<AdminSessionInfo>(`${ADMIN}/auth/me`)
-      } catch {
+      } catch (error) {
+        if (!(error instanceof ApiError) || error.status !== 401) throw error
         throw new ApiError(
           401,
           '관리자 세션을 유지하지 못했습니다. 페이지를 새로고침한 뒤 다시 로그인해 주세요.',
@@ -52,7 +55,7 @@ export function useLogout() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: () => api<unknown>(`${ADMIN}/auth/logout`, { method: 'POST' }),
-    onSettled: () => qc.clear(),
+    onSuccess: () => clearAdminSession(qc),
   })
 }
 
@@ -195,7 +198,7 @@ export function useRestockItem() {
 export function useFlights() {
   return useQuery({
     queryKey: ['flights'],
-    queryFn: () => api<UnknownRecord[]>('/api/v1/flights'),
+    queryFn: async () => droneTelemetryListSchema.parse(await api<unknown>('/api/v1/flights/status')),
     refetchInterval: 10_000,
   })
 }
@@ -213,5 +216,21 @@ export function useDetections() {
     queryKey: ['detections'],
     queryFn: () => api<UnknownRecord[]>('/api/v1/detections'),
     refetchInterval: 30_000,
+  })
+}
+
+export function useProductPhotos() {
+  return useQuery({
+    queryKey: ['product-photos'],
+    queryFn: () => api<{ item_id: string; version: string; mime: string }[]>('/api/v1/inventory/photos'),
+  })
+}
+
+export function useUploadProductPhoto() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, image_data_url }: { id: string; image_data_url: string }) =>
+      api<unknown>(`/api/v1/inventory/${encodeURIComponent(id)}/photo`, { method: 'POST', body: { image_data_url } }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['product-photos'] }),
   })
 }

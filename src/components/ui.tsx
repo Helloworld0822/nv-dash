@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Icon, type IconName } from './Icon'
-import { thumbSlot } from '../lib/format'
+import { useState } from 'react'
+import { useProductPhotos } from '../api/hooks'
 
 export function Card({
   title,
@@ -116,7 +117,14 @@ export function Thumb({
   size?: 'sm' | 'md' | 'lg'
 }) {
   const cls = size === 'sm' ? 'thumb is-sm' : size === 'lg' ? 'thumb is-lg' : 'thumb'
-  return <div className={cls} data-slot={thumbSlot(seed)} role="presentation" />
+  const photos = useProductPhotos()
+  const photo = photos.data?.find((candidate) => candidate.item_id === seed)
+  const [failedVersion, setFailedVersion] = useState<string | null>(null)
+  return <div className={cls} role="presentation">
+    {photo && failedVersion !== photo.version
+      ? <img src={`/api/v1/inventory/${encodeURIComponent(seed)}/photo?v=${encodeURIComponent(photo.version)}`} alt="" onError={() => setFailedVersion(photo.version)} />
+      : <Icon name="products" />}
+  </div>
 }
 
 export function StatCard({

@@ -119,7 +119,6 @@ export function LoginPage() {
               />
               아이디 기억하기
             </label>
-            <span className="link">비밀번호 찾기</span>
           </div>
 
           {login.error && <p className="error-bar">{(login.error as Error).message}</p>}

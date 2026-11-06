@@ -1,20 +1,24 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Icon } from '../components/Icon'
-import { Card, Empty, ErrorBar, Hint, PageHead, Tabs } from '../components/ui'
-import { useCreateItem } from '../api/hooks'
-import { SNACK_CATALOG, suggestSku, type Snack } from '../lib/snacks'
-
-type CategoryTab = 'all' | '스낵' | '비스킷'
+import { Card, Empty, ErrorBar, Hint, PageHead, Thumb } from '../components/ui'
+import { useCreateItem, useInventory } from '../api/hooks'
+import { productDraftSchema, suggestSku } from '../lib/snacks'
+import type { InventoryItem } from '../api/types'
 
 export function ProductNewPage() {
   const navigate = useNavigate()
   const create = useCreateItem()
+  const inventory = useInventory()
 
-  const [picked, setPicked] = useState<Snack | null>(null)
+  const [picked, setPicked] = useState<InventoryItem | null>(null)
+  const [custom, setCustom] = useState(false)
+  const [sku] = useState(() => suggestSku())
+  const [name, setName] = useState('')
+  const [maker, setMaker] = useState('')
+  const [category, setCategory] = useState('')
   const [step, setStep] = useState<1 | 2>(1)
   const [query, setQuery] = useState('')
-  const [tab, setTab] = useState<CategoryTab>('all')
 
   const [price, setPrice] = useState('')
   const [stock, setStock] = useState('')
@@ -23,29 +27,57 @@ export function ProductNewPage() {
 
   const snacks = useMemo(() => {
     const keyword = query.trim().toLowerCase()
-    return SNACK_CATALOG.filter((snack) => {
-      if (tab !== 'all' && snack.category !== tab) return false
+    return (inventory.data ?? []).filter((snack) => {
+      if (!snack.active) return false
       if (!keyword) return true
       return (
-        snack.name.toLowerCase().includes(keyword) || snack.maker.toLowerCase().includes(keyword)
+        snack.name.toLowerCase().includes(keyword) || snack.description?.toLowerCase().includes(keyword)
       )
     })
-  }, [query, tab])
+  }, [query, inventory.data])
+
+  const draft = productDraftSchema.safeParse({ name, maker, category, price, stock, description, active })
+
+  function startCustom() {
+    if (!custom) {
+      setName('')
+      setMaker('')
+      setCategory('')
+      setDescription('')
+      setPrice('')
+      setStock('')
+      setActive(true)
+    }
+    setCustom(true)
+    setStep(2)
+  }
+
+  function startCatalog() {
+    if (!picked) return
+    const [metadata = '', ...details] = (picked.description ?? '').split('\n')
+    const [sourceMaker = '', ...sourceCategory] = metadata.split(' · ')
+    const hasMetadata = sourceCategory.length > 0
+    setCustom(false)
+    setName(picked.name)
+    setMaker(hasMetadata ? sourceMaker : '')
+    setCategory(hasMetadata ? sourceCategory.join(' · ') : '')
+    setDescription(hasMetadata ? details.join('\n') : picked.description ?? '')
+    setPrice(String(picked.unit_price))
+    setStock(String(picked.stock_quantity))
+    setActive(picked.active)
+    setStep(2)
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault()
-    if (!picked) return
+    if (!draft.success || create.isPending) return
     create.mutate(
       {
-        sku: suggestSku(picked),
-        name: picked.name,
-        unit_price: Number(price),
-        stock_quantity: Number(stock),
-        description: description.trim() || `${picked.maker} · ${picked.category}`,
-        active,
+        ...draft.data,
+        sku,
         currency: 'KRW',
       },
-      { onSuccess: () => navigate('/products') },
+      { onSuccess: (item) => navigate(`/products/${item.id}/edit`) },
     )
   }
 
@@ -54,11 +86,16 @@ export function ProductNewPage() {
       <>
         <PageHead
           title="상품 등록"
-          sub="등록할 과자를 먼저 골라 주세요."
+          sub="저장된 상품을 고르거나 새 상품을 직접 입력하세요."
           actions={
-            <Link to="/products" className="btn">
-              취소
-            </Link>
+            <>
+              <button type="button" className="btn" onClick={startCustom}>
+                직접 입력 · 사용자 지정
+              </button>
+              <Link to="/products" className="btn">
+                취소
+              </Link>
+            </>
           }
         />
 
@@ -72,25 +109,11 @@ export function ProductNewPage() {
             />
           </label>
 
-          <Tabs
-            value={tab}
-            onChange={setTab}
-            items={[
-              { key: 'all', label: `전체 ${SNACK_CATALOG.length}` },
-              {
-                key: '스낵',
-                label: `스낵 ${SNACK_CATALOG.filter((s) => s.category === '스낵').length}`,
-              },
-              {
-                key: '비스킷',
-                label: `비스킷 ${SNACK_CATALOG.filter((s) => s.category === '비스킷').length}`,
-              },
-            ]}
-          />
+          <ErrorBar error={inventory.error} />
 
           <div className="pick-scroll">
-            {snacks.length === 0 ? (
-              <Empty title="검색 결과가 없어요" hint="다른 이름이나 제조사로 찾아보세요." />
+            {inventory.isPending ? <Empty title="상품 목록 불러오는 중…" /> : snacks.length === 0 ? (
+              <Empty title="검색 결과가 없어요" hint="다른 이름으로 검색하거나 직접 입력해 주세요." />
             ) : (
               snacks.map((snack) => {
                 const isPicked = picked?.id === snack.id
@@ -101,13 +124,11 @@ export function ProductNewPage() {
                     className={isPicked ? 'pick-row is-picked' : 'pick-row'}
                     onClick={() => setPicked(snack)}
                   >
-                    <span className="pick-icon">
-                      <Icon name="products" />
-                    </span>
-                    <span>
+                    <Thumb seed={snack.id} />
+                    <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
                       <b>{snack.name}</b>
                       <small>
-                        {snack.maker} · {snack.category}
+                        {snack.description || snack.sku}
                       </small>
                     </span>
                     <span className="pick-state">{isPicked ? '선택됨' : '선택'}</span>
@@ -119,15 +140,15 @@ export function ProductNewPage() {
           </div>
 
           <div className="pick-foot">
-            <div>
-              <b>{picked ? `${picked.name} 선택됨` : '과자를 선택해 주세요'}</b>
-              <small>{picked ? `${picked.maker} · ${picked.category}` : '목록에서 하나를 고르세요.'}</small>
+            <div style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+              <b>{picked ? `${picked.name} 선택됨` : '상품을 선택해 주세요'}</b>
+              <small>{picked ? picked.description || picked.sku : '목록에서 고르거나 직접 입력하세요.'}</small>
             </div>
             <button
               type="button"
               className="btn is-primary"
               disabled={!picked}
-              onClick={() => setStep(2)}
+              onClick={startCatalog}
             >
               <Icon name="arrowRight" />
               다음 · 판매 정보 입력
@@ -136,20 +157,19 @@ export function ProductNewPage() {
         </Card>
 
         <Hint>
-          과자 목록은 화면에 내장된 카탈로그예요. 선택한 과자에 매점 판매가와 재고를 입력하면 상품으로
-          등록됩니다.
+          상품 목록과 사진은 저장된 상품에서 불러옵니다. 목록에 없는 상품은 직접 입력할 수 있어요.
         </Hint>
       </>
     )
   }
 
-  const canSubmit = Boolean(picked) && price.trim() !== '' && stock.trim() !== ''
+  const canSubmit = draft.success
 
   return (
     <form onSubmit={submit}>
       <PageHead
         title="판매 정보 입력"
-        sub="선택한 과자의 판매가와 재고를 입력하세요."
+        sub="상품명과 판매 정보를 입력하세요. 등록 후 상품 수정 화면에서 사진을 추가할 수 있어요."
         actions={
           <>
             <button type="button" className="btn" onClick={() => setStep(1)}>
@@ -167,15 +187,18 @@ export function ProductNewPage() {
 
       <div className="cols">
         <Card title="판매 정보">
-          <div className="picked-card">
-            <span className="mark">
-              <Icon name="products" />
-            </span>
-            <div>
-              <b>{picked?.name}</b>
-              <span>
-                {picked?.maker} · {picked?.category}
-              </span>
+          <div className="field">
+            <label htmlFor="name">상품명 (필수)</label>
+            <input id="name" value={name} onChange={(event) => setName(event.target.value)} required />
+          </div>
+          <div className="field-row">
+            <div className="field">
+              <label htmlFor="maker">제조사 (선택)</label>
+              <input id="maker" value={maker} onChange={(event) => setMaker(event.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="category">카테고리 (선택)</label>
+              <input id="category" value={category} onChange={(event) => setCategory(event.target.value)} />
             </div>
           </div>
 
@@ -186,7 +209,8 @@ export function ProductNewPage() {
                 id="price"
                 type="number"
                 min={0}
-                step={100}
+                step={1}
+                max={Number.MAX_SAFE_INTEGER}
                 placeholder="판매가를 입력해 주세요"
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
@@ -199,6 +223,8 @@ export function ProductNewPage() {
                 id="stock"
                 type="number"
                 min={0}
+                step={1}
+                max={2_147_483_647}
                 placeholder="재고 수량을 입력해 주세요"
                 value={stock}
                 onChange={(event) => setStock(event.target.value)}
@@ -220,7 +246,7 @@ export function ProductNewPage() {
           </div>
 
           <div className="field">
-            <label htmlFor="description">상품 설명</label>
+            <label htmlFor="description">상품 설명 (선택)</label>
             <textarea
               id="description"
               placeholder="상품 설명을 입력해 주세요"
@@ -229,32 +255,32 @@ export function ProductNewPage() {
             />
           </div>
 
-          <Hint>판매가와 재고 수량을 입력하면 상품을 등록할 수 있어요.</Hint>
+          <Hint>판매가와 재고는 0 이상의 정수로 입력해 주세요. 제조사와 카테고리는 상품 설명에 함께 저장됩니다.</Hint>
         </Card>
 
-        <Card title="선택한 과자">
+        <Card title={custom ? '사용자 지정 상품' : '선택한 상품'}>
           <div className="picked-card">
             <span className="mark">
               <Icon name="products" />
             </span>
             <div>
-              <b>{picked?.name}</b>
-              <span>{picked?.maker}</span>
+              <b>{name || '상품명을 입력해 주세요'}</b>
+              <span>{maker || '제조사 미입력'}</span>
             </div>
           </div>
           <div className="divider" />
           <dl className="kv">
             <dt>카테고리</dt>
-            <dd>{picked?.category}</dd>
+            <dd>{category || '미입력'}</dd>
           </dl>
           <dl className="kv">
-            <dt>상품 코드</dt>
-            <dd>등록할 때 자동으로 만들어져요</dd>
+            <dt style={{ flexShrink: 0 }}>상품 코드</dt>
+            <dd style={{ overflowWrap: 'anywhere' }}>{sku}</dd>
           </dl>
-          <p className="hint">선택한 상품에 매점의 판매가와 재고를 입력해 주세요.</p>
+          <p className="hint">등록 후 상품 수정 화면에서 사진을 선택하고 업로드할 수 있어요.</p>
           <button type="button" className="btn" onClick={() => setStep(1)}>
             <Icon name="chevronLeft" />
-            과자 다시 선택
+            상품 다시 선택
           </button>
         </Card>
       </div>
