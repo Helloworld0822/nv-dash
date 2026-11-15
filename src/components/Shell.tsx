@@ -3,6 +3,7 @@ import { Icon, type IconName } from './Icon'
 import { useLogout, useSession } from '../api/hooks'
 import { useAlerts } from '../lib/useAlerts'
 import { formatToday } from '../lib/format'
+import { ErrorBar } from './ui'
 
 interface NavEntry {
   to: string
@@ -83,6 +84,7 @@ export function Shell() {
               type="button"
               className="account-out"
               title="로그아웃"
+              disabled={logout.isPending}
               onClick={() => logout.mutate()}
             >
               <Icon name="logout" size={16} />
@@ -114,13 +116,15 @@ export function Shell() {
             type="button"
             className="account-out"
             title="로그아웃"
-            onClick={() => logout.mutate()}
+            disabled={logout.isPending}
+              onClick={() => logout.mutate()}
           >
             <Icon name="logout" size={21} />
           </button>
         </header>
 
         <main className="content">
+          <ErrorBar error={logout.error} />
           <Outlet />
         </main>
       </div>

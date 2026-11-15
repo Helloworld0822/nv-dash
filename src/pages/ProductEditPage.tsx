@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Icon } from '../components/Icon'
-import { Card, Empty, ErrorBar, Hint, PageHead, Thumb } from '../components/ui'
+import { PhotoEditor } from '../components/ProductPhotoEditor'
+import { Card, Empty, ErrorBar, Hint, PageHead } from '../components/ui'
 import { useInventoryItem, useRestockItem, useUpdateItem } from '../api/hooks'
 import { formatDateTime } from '../lib/format'
 
@@ -130,10 +131,7 @@ export function ProductEditPage() {
         </Card>
 
         <Card title="상품 사진">
-          <Thumb seed={product.id} size="lg" />
-          <p className="hint">
-            대표 사진은 정사각형으로 노출돼요. 백엔드에 사진 업로드 API가 없어 기본 이미지가 쓰여요.
-          </p>
+          <PhotoEditor key={product.id} itemId={product.id} />
 
           <div className="divider" />
 

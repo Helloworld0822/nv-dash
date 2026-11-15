@@ -52,10 +52,3 @@ export function shortOrderNumber(orderNumber: string) {
   const tail = orderNumber.split('-').pop()
   return `#${tail && tail.length <= 6 ? tail : orderNumber.slice(-4)}`
 }
-
-/** 같은 상품에는 항상 같은 사진이 걸리도록 id 를 스프라이트 슬롯으로 매핑한다. */
-export function thumbSlot(key: string) {
-  let hash = 0
-  for (let i = 0; i < key.length; i += 1) hash = (hash * 31 + key.charCodeAt(i)) >>> 0
-  return hash % 3
-}

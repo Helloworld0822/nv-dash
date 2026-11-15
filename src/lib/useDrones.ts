@@ -1,26 +1,24 @@
 import { useMemo } from 'react'
-import { useDeliveries, useFlights } from '../api/hooks'
-import { countByStatus, mergeDrones } from './drones'
+import { useFlights } from '../api/hooks'
+import { countByStatus, normalizeDrone } from './drones'
 
 export function useDrones() {
   const flights = useFlights()
-  const deliveries = useDeliveries()
 
   const list = useMemo(
-    () => mergeDrones([flights.data ?? [], deliveries.data ?? []]),
-    [flights.data, deliveries.data],
+    () => (flights.data ?? []).map(normalizeDrone).sort((a, b) => a.name.localeCompare(b.name)),
+    [flights.data],
   )
 
   return {
     list,
     counts: useMemo(() => countByStatus(list), [list]),
-    isPending: flights.isPending || deliveries.isPending,
-    isLoading: flights.isLoading || deliveries.isLoading,
-    error: flights.error ?? deliveries.error,
+    isPending: flights.isPending,
+    isLoading: flights.isLoading,
+    error: flights.error,
     refetch: () => {
       void flights.refetch()
-      void deliveries.refetch()
     },
-    updatedAt: Math.max(flights.dataUpdatedAt, deliveries.dataUpdatedAt),
+    updatedAt: flights.dataUpdatedAt,
   }
 }

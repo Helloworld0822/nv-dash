@@ -957,7 +957,10 @@ ul {
   width: 68px;
   height: 68px;
   border-radius: 8px;
-  background-image: url('/assets/snacks-sprite.png');
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
   background-repeat: no-repeat;
   background-size: 300% auto;
   background-position-y: center;
@@ -973,18 +976,6 @@ ul {
   height: 282px;
   border-radius: 8px;
   background-size: 160% auto;
-}
-
-.thumb[data-slot='0'] {
-  background-position-x: 0%;
-}
-
-.thumb[data-slot='1'] {
-  background-position-x: 50%;
-}
-
-.thumb[data-slot='2'] {
-  background-position-x: 100%;
 }
 
 .detail-actions {
@@ -1010,7 +1001,7 @@ ul {
   width: 100%;
   height: 426px;
   border-radius: 10px;
-  background: var(--bg) url('/assets/delivery-map.svg') center / contain no-repeat;
+  background: var(--bg) url('../public/assets/delivery-map.svg') center / contain no-repeat;
 }
 
 .map.is-sm {
@@ -1442,7 +1433,7 @@ ul {
   height: min(285px, 32vh);
   margin-top: auto;
   border-radius: 10px;
-  background: url('/assets/delivery-map.svg') center / contain no-repeat;
+  background: url('../public/assets/delivery-map.svg') center / contain no-repeat;
 }
 
 .login-foot {
@@ -1753,3 +1744,5 @@ ul {
     align-items: stretch;
   }
 }
+
+.thumb img { width: 100%; height: 100%; object-fit: contain; }

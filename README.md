@@ -7,15 +7,15 @@ React 로 구현한 대시보드입니다. 백엔드는
 ## 실행
 
 ```bash
-npm install
-npm run dev        # http://0.0.0.0:5173
+npm ci
+npm run dev        # http://localhost:5173/nv-dash/
 ```
 
 운영 번들:
 
 ```bash
 npm run build
-npm run preview    # http://0.0.0.0:4173
+npm run preview    # http://localhost:4173/nv-dash/
 ```
 
 백엔드 주소는 `NV_BACKEND` 환경변수로 바꿀 수 있습니다.
@@ -38,23 +38,23 @@ Vite 의 `server.proxy` / `preview.proxy` 로 `/api` 와 `/health` 를 같은 �
 | 화면 | 경로 | 사용하는 엔드포인트 |
 | --- | --- | --- |
 | 관리자 로그인 | `/login` | `POST /admin/auth/login`, `GET /admin/auth/me` |
-| 운영 현황 | `/` | `GET /admin/orders/stats`, `GET /admin/orders`, `GET /admin/order-events`, `GET /flights`, `GET /deliveries` |
+| 운영 현황 | `/` | `GET /admin/orders/stats`, `GET /admin/orders`, `GET /admin/order-events`, `GET /flights/status` |
 | 주문 관리 | `/orders` | `GET /admin/orders`, `GET /orders/{id}`, `PATCH /orders/{id}/status` |
 | 상품 관리 | `/products` | `GET /inventory`, `PATCH /inventory/{id}` |
 | 상품 등록 | `/products/new` | `POST /inventory` |
 | 상품 수정 | `/products/:id/edit` | `GET·PATCH /inventory/{id}`, `POST /inventory/{id}/restock` |
-| 드론 현황 | `/drones` | `GET /flights`, `GET /deliveries` |
-| 드론 상세 | `/drones/:id` | `GET /flights`, `GET /deliveries`, `GET /admin/order-events` |
+| 드론 현황 | `/drones` | `GET /flights/status` |
+| 드론 상세 | `/drones/:id` | `GET /flights/status`, `GET /admin/order-events` |
 | 알림·점검 | `/alerts` | `GET /admin/order-jobs`, `GET /admin/queue/stats`, `GET /inventory`, `GET /health/ready` |
 
 ## 백엔드가 덮지 못하는 부분
 
-- **드론 데이터** — `/api/v1/flights`, `/api/v1/deliveries` 는 OpenAPI 문서에 없고 현재 빈 배열을
-  돌려줍니다. 응답 필드 이름을 확정할 수 없어 `src/lib/drones.ts` 에서 흔한 키 이름을 훑어 화면용
-  모델로 추립니다. 데이터가 없으면 빈 상태가 보입니다.
+- **드론 데이터** — `/api/v1/flights/status`의 최신 텔레메트리와 서버의 연결 판정을 사용합니다. 배터리는 백분율이며 주문 번호·수령 장소는 응답에 없어 미지정으로 표시합니다.
 - **알림** — 알림 전용 엔드포인트가 없습니다. 실패한 처리 작업, 재고 0·부족, 기체 이상,
   `/health/ready` 의 Postgres·Redis 상태를 모아 알림 목록을 만듭니다 (`src/lib/useAlerts.ts`).
-- **상품 등록 1단계의 과자 목록** — 제조사 카탈로그 API가 없어 디자인에 적힌 품목을
-  `src/lib/snacks.ts` 에 내장했습니다. 2단계에서 입력한 판매가·재고와 함께 `POST /inventory` 로
-  등록됩니다.
-- **상품 사진** — 업로드 API가 없어 Figma 에서 받은 기본 이미지를 상품 id 로 고르게 배분합니다.
+- **상품 등록 목록** — 활성 상품과 사진을 실제 재고 DB에서 자동으로 읽습니다. 목록에 없는 상품은 직접 입력으로 이름·제조사·카테고리·가격·재고를 등록하고, 생성 직후 사진 편집 화면으로 이동합니다. 공식 간식·사진 보완은 `infra/catalog/import_snacks.py`가 기존 데이터를 보존하며 수행합니다.
+- **상품 사진** — `/api/v1/inventory/photos`와 `/inventory/{id}/photo`를 사용합니다. 상품 수정 화면에서 JPG·PNG·WebP(1MB 이하)를 등록하며, 사진이 없으면 아이콘을 표시합니다. 파일 또는 이미지 URL을 미리 본 뒤 명시적으로 저장하며, 외부 사이트의 CORS 차단 시 파일 업로드를 안내합니다.
+
+운영 경로는 `/nv-dash/`입니다. API는 같은 출처의 `/api`, `/health`로 요청합니다. 개발 기본 백엔드는 `http://localhost:8080`입니다. HTTPS 백엔드의 Secure·SameSite 쿠키 속성은 프록시에서도 유지되므로 HTTPS 개발 출처를 사용하세요.
+
+검증: `npm run build`, `npm run lint`, `npm test`.
